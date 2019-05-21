@@ -1,0 +1,85 @@
+# vim:set et sw=2 ts=2:
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: hashbang-ircd
+spec:
+  selector:
+    matchLabels:
+      app: hashbang-ircd
+  strategy:
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: hashbang-ircd
+    spec:
+      containers:
+      - name: ircd-configuror
+        image: hashbang/unrealircd-rehasher:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: APP_NAME
+          value: hashbang-ircd
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: CONFIG_PATH
+          value: "/config-output/links.conf"
+        volumeMounts:
+        - name: ircd-config-output
+          mountPath: /config-output
+      - name: ircd
+        image: hashbang/unrealircd:4.2.0
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: ircd-cert
+          mountPath: /etc/unrealircd/certs
+        - name: ircd-config
+          mountPath: /etc/unrealircd
+        - name: ircd-config-output
+          mountPath: /etc/unrealircd/templater
+        ports:
+        - name: ircs
+          containerPort: 6697
+        - name: ircs-websocket
+          containerPort: 6800
+        - name: irc-services
+          containerPort: 7000
+        livenessProbe:
+          tcpSocket:
+            port: ircs
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        readinessProbe:
+          tcpSocket:
+            port: ircs
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: ircd-cert
+        secret:
+          secretName: irc.hashbang.sh
+      - name: ircd-config
+        configMap:
+          name: ircd-config
+      - name: ircd-config-output
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hashbang-ircd
+spec:
+  type: NodePort
+  ports:
+  - name: ircs
+    port: 6697
+    targetPort: 6697
+    protocol: TCP
+  selector:
+    app: hashbang-ircd

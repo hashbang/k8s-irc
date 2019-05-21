@@ -1,0 +1,23 @@
+# vim:set et sw=2 ts=2:
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configMapGenerator:
+- name: ircd-config
+  files:
+  - config/aliases.conf
+  - config/aliases-anope.conf
+  - config/badwords.channel.conf
+  - config/badwords.message.conf
+  - config/badwords.quit.conf
+  - config/dccallow.conf
+  - config/help.conf
+  - config/ircd.motd
+secretGenerator:
+- name: ircd-link-key-irc
+  files:
+  - irc.key
+- name: ircd-link-key-services
+  files:
+  - services.key
+resources:
+- thing.yml

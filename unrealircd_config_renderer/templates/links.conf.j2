@@ -1,0 +1,45 @@
+me {
+    name "{{ current_server }}";
+    info "Hashbang IRC Network";
+    sid {{ server_id }};
+};
+
+operclass rehasher {
+    permissions {
+        server:rehash;
+    };
+};
+
+oper rehash {
+    mask "*@127.0.0.1";
+    password "{{ config.oper_password }}";
+    class "{{ config.oper_user_class }}";
+    operclass rehasher;
+};
+
+ban nick {
+    mask "rehashbot";
+    reason "Reserved for Internal Services";
+};
+
+except ban {
+    mask "*@127.0.0.1";
+};
+
+{% for server in config.servers %}
+link {{ server }} {
+    username *;
+    hostname "{{ server }}";
+    port 6697;
+    password-connect "{{ config.keys.irc }}";
+    password-receive "{{ config.keys.irc }}";
+    hub *;
+    class servers;
+    options {
+	nohostcheck;
+	nodnscache;
+        autoconnect;
+        ssl;
+    };
+};
+{% endfor %}
