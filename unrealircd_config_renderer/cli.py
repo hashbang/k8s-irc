@@ -9,23 +9,6 @@ import ssl
 from kubernetes import client, config, watch
 from jinja2 import Environment, PackageLoader
 
-env = Environment(loader=PackageLoader("unrealircd_config_renderer",
-                                       "templates"))
-
-template = env.get_template("links.conf.j2")
-
-def generate_oper_credentials():
-    length = 24
-    password = ''.join(random.SystemRandom().choice(
-            string.ascii_uppercase+string.digits) for _ in range(length))
-    return password
-
-
-def render_links_template(current_server, server_id, config):
-    return template.render(current_server=current_server,
-                           server_id=str(server_id).zfill(3),
-                           config=config)
-
 
 NS_FILENAME = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 
@@ -42,11 +25,51 @@ def get_app_name():
     return os.environ["APP_NAME"]
 
 
+def get_config_path():
+    return os.environ["CONFIG_PATH"]
+
+
 def get_pod_name():
     return os.environ["POD_NAME"]
 
 
-context = ssl.create_default_context()
+def generate_server_id(server_uid):
+    # needs to be 3 decimal characters, per UnrealIRCd docs
+    return (
+        int.from_bytes(
+            hashlib.sha1(server_uid.encode("ascii")).digest()[:2], sys.byteorder
+        )
+        % 1000
+    )
+
+
+def generate_oper_credentials(password_length=24):
+    password = "".join(
+        random.SystemRandom().choice(string.ascii_uppercase + string.digits)
+        for _ in range(password_length)
+    )
+    return password
+
+
+template_environment = Environment(
+    loader=PackageLoader("unrealircd_config_renderer", "templates")
+)
+
+template = template_environment.get_template("links.conf.j2")
+
+
+def render_links_template(current_server, server_id, config):
+    return template.render(
+        current_server=current_server, server_id=str(server_id).zfill(3), config=config
+    )
+
+
+def write_config(path, new_config):
+    with open(path, "w") as f:
+        f.write(new_config)
+
+
+ssl_context = ssl.create_default_context()
 
 
 def send_rehash(server_address="127.0.0.1:6697", hostname=None):
@@ -58,23 +81,8 @@ def send_rehash(server_address="127.0.0.1:6697", hostname=None):
     """
 
     with socket.create_connection(server_address) as conn:
-        with context.wrap_socket(conn, server_hostname=hostname) as conn_tls:
+        with ssl_context.wrap_socket(conn, server_hostname=hostname) as conn_tls:
             conn_tls.send(payload.encode("ascii"))
-
-
-def generate_server_id(server_uid):
-    # needs to be 3 decimal characters, per UnrealIRCd docs
-    return int.from_bytes(hashlib.sha1(server_uid.encode('ascii'))
-            .digest()[:2], sys.byteorder) % 1000
-
-
-def get_output_path():
-    return os.environ["CONFIG_PATH"]
-
-
-def write_config(path, new_config):
-    with open(path, "w") as f:
-        f.write(new_config)
 
 
 def main():
@@ -92,10 +100,10 @@ def main():
     current_server = get_namespace() + "." + get_pod_name()
     old_config = None
     for event in w.stream(
-            v1.list_namespaced_pod,
-            namespace=get_namespace(),
-            label_selector=f"app=={get_app_name()}",
-            field_selector=f"metadata.name!={get_pod_name()}"
+        v1.list_namespaced_pod,
+        namespace=get_namespace(),
+        label_selector=f"app=={get_app_name()}",
+        field_selector=f"metadata.name!={get_pod_name()}",
     ):
         # check event.status.phase
         obj = event["object"]
@@ -104,11 +112,11 @@ def main():
         elif obj.metadata.uid in server_config["other_servers"]:
             del server_config["other_servers"][obj.metadata.uid]
         # get list of servers, get attached server
-        new_config = render_links_template(current_server,
-                             generate_server_id(current_server),
-                             config=server_config)
+        new_config = render_links_template(
+            current_server, generate_server_id(current_server), config=server_config
+        )
         if new_config == old_config:
             continue
-        write_config(get_output_path(), new_config)
+        write_config(get_config_path(), new_config)
         send_rehash()
         old_config = new_config
