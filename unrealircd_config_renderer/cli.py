@@ -85,8 +85,8 @@ def main():
 
     server_config = {
         "oper_password": generate_oper_credentials(),
-        "other_servers": dict(),
         "oper_user_class": "clients",
+        "other_servers": dict(),
     }
     current_server = get_namespace() + "." + get_pod_name()
     old_config = None

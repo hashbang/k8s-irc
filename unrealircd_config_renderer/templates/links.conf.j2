@@ -26,7 +26,7 @@ except ban {
     mask "*@127.0.0.1";
 };
 
-{% for server in config.servers %}
+{% for server in config.other_servers %}
 link {{ server }} {
     username *;
     hostname "{{ server }}";
