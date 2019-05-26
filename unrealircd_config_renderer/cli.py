@@ -72,11 +72,11 @@ def write_config(path, new_config):
 ssl_context = ssl.create_default_context()
 
 
-def send_rehash(server_address="127.0.0.1:6697", hostname=None):
+def send_rehash(server_address="127.0.0.1:6697", hostname=None, oper_credentials):
     payload = f"""
     NICK rehashbot
     USER rehashbot * * :Rehashes the IRCd!
-    OPER rehash {generate_oper_credentials()}
+    OPER rehash {oper_credentials}
     REHASH
     """
 
@@ -118,5 +118,5 @@ def main():
         if new_config == old_config:
             continue
         write_config(get_config_path(), new_config)
-        send_rehash()
+        send_rehash(oper_credentials=server_config["oper_password"])
         old_config = new_config
