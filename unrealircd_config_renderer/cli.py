@@ -87,6 +87,7 @@ def main():
         "oper_password": generate_oper_credentials(),
         "oper_user_class": "clients",
         "other_servers": dict(),
+        "server_info": "Hashbang IRC Network",
     }
     current_server = get_namespace() + "." + get_pod_name()
     old_config = None
