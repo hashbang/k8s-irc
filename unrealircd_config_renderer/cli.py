@@ -72,16 +72,22 @@ def write_config(path, new_config):
 ssl_context = ssl.create_default_context()
 
 
-def send_rehash(server_address="127.0.0.1:6697", hostname=None, oper_credentials):
+def send_rehash(
+    oper_credentials,
+    server_address="127.0.0.1:6697",
+    nick="rehasher",
+    user="rehasher",
+    sni=None,
+):
     payload = f"""
-    NICK rehashbot
-    USER rehashbot * * :Rehashes the IRCd!
+    NICK {nick}
+    USER {user} * * :Rehashes the IRCd!
     OPER rehash {oper_credentials}
     REHASH
     """
 
     with socket.create_connection(server_address) as conn:
-        with ssl_context.wrap_socket(conn, server_hostname=hostname) as conn_tls:
+        with ssl_context.wrap_socket(conn, server_hostname=sni) as conn_tls:
             conn_tls.send(payload.encode("ascii"))
 
 
@@ -95,6 +101,8 @@ def main():
         "oper_password": generate_oper_credentials(),
         "oper_user_class": "clients",
         "other_servers": dict(),
+        "rehasher_nick": "rehasher",
+        "rehasher_user": "rehasher",
         "server_info": "Hashbang IRC Network",
     }
     current_server = get_namespace() + "." + get_pod_name()
@@ -103,6 +111,7 @@ def main():
         v1.list_namespaced_pod,
         namespace=get_namespace(),
         label_selector=f"app=={get_app_name()}",
+        # Don't want to include ourselves
         field_selector=f"metadata.name!={get_pod_name()}",
     ):
         # check event.status.phase
@@ -118,5 +127,9 @@ def main():
         if new_config == old_config:
             continue
         write_config(get_config_path(), new_config)
-        send_rehash(oper_credentials=server_config["oper_password"])
+        send_rehash(
+            oper_credentials=server_config["oper_password"],
+            nick=server_config["rehasher_nick"],
+            user=server_config["rehasher_user"],
+        )
         old_config = new_config

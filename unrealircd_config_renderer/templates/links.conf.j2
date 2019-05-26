@@ -11,22 +11,22 @@ operclass rehasher {
 };
 
 oper rehash {
-    mask "*@127.0.0.1";
+    mask "{{ config.rehasher_user }}@127.0.0.1";
     password "{{ config.oper_password }}";
     class "{{ config.oper_user_class }}";
     operclass rehasher;
 };
 
 ban nick {
-    mask "rehashbot";
+    mask "{{ config.rehasher_nick }}";
     reason "Reserved for Internal Services";
 };
 
 except ban {
-    mask "*@127.0.0.1";
+    mask "{{ config.rehasher_user }}@127.0.0.1";
 };
 
-{% for server in config.other_servers %}
+{% for server in config.other_servers.values() %}
 link {{ server }} {
     username *;
     hostname "{{ server }}";
