@@ -1,10 +1,12 @@
-# TODO:
+# UnrealIRCD in Kubernetes
 
-  - add serviceAccount so that rehasher can read pods
-  - rename dockerhub image
+This project contains a python tool that manages an UnrealIRCD server's `link` configuration.
+Whenever a new IRCD pod is started, all running IRCD pods will get their link configuration re-rendered and a `REHASH` command sent.
+
+
+# TODO
+
   - set up CI testing for python program
-  - add argparse/cli for python program
-  - add link.key secret mounting/rendering
   - rehash on config change as separate operation?
 
 
@@ -17,8 +19,15 @@ kubectl kustomize base | kubectl apply -f -
 
 # Development
 
-## Build the rehasher docker image:
+## Build and tag the unrealircd docker image:
 
 ```
-docker build . -f Dockerfile.rehasher -t rehasher:latest
+docker build -t hashbang/unrealircd:4.2.3-archlinux - < Dockerfile.unrealircd
+```
+
+
+## Build and tag the rehasher docker image:
+
+```
+docker build -t hashbang/unrealircd-config-renderer:latest -f Dockerfile.rehasher .
 ```

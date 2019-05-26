@@ -1,8 +1,11 @@
 FROM python:3
-
-RUN pip install kubernetes && \
-    pip install jinja2
-
 WORKDIR /src
-ADD unrealircd_config_renderer ./unrealircd_config_renderer
-CMD ["python3", "-m", "unrealircd_config_renderer"]
+COPY README.md setup.py ./
+COPY unrealircd_config_renderer ./unrealircd_config_renderer
+RUN SETUPTOOLS_SCM_PRETEND_VERSION=dev python setup.py bdist_egg
+
+FROM python:3
+COPY --from=0 /src/dist/unrealircd_config_renderer-dev-py3.7.egg /usr/local/lib/python3.7/site-packages/
+RUN python -m easy_install /usr/local/lib/python3.7/site-packages/unrealircd_config_renderer-dev-py3.7.egg
+
+CMD ["unrealircd-config-renderer", "--help"]
