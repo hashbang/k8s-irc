@@ -1,5 +1,5 @@
 {% for server in server_links.values() %}
-link {{ server.name }} {
+link "{{ server.name }}" {
     incoming {
         mask 10.*.*.*;
     };
