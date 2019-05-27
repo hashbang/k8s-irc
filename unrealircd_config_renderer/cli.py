@@ -165,7 +165,7 @@ def main(argv=None):
     )
     parser.add_argument(
         "--rehasher-oper-password-file",
-        type=argparse.FileType("w+", encoding="UTF=8"),
+        type=argparse.FileType("a+", encoding="UTF=8"),
         help="Read/Write the rehasher oper password from/to this path",
     )
     subparsers = parser.add_subparsers(
@@ -237,22 +237,20 @@ def main(argv=None):
         pod_name = os.environ["POD_NAME"]
 
     rehasher_oper_password = args.rehasher_oper_password
-    rehasher_oper_password_file = args.rehasher_oper_password_file
     if rehasher_oper_password is None:
         rehasher_oper_password = os.environ.get("REHASHER_OPER_PASSWORD")
+    rehasher_oper_password_file = args.rehasher_oper_password_file
     if rehasher_oper_password is None and rehasher_oper_password_file is not None:
+        rehasher_oper_password_file.seek(0)
         rehasher_oper_password = rehasher_oper_password_file.read()
         if rehasher_oper_password is "":
             rehasher_oper_password = None
-        else:
-            rehasher_oper_password_file.seek(0)
     if rehasher_oper_password is None:
         rehasher_oper_password = generate_oper_credentials()
-    if rehasher_oper_password_file is not None:
-        rehasher_oper_password_file.write(rehasher_oper_password)
-        rehasher_oper_password_file.flush()
-        rehasher_oper_password_file.truncate()
-        rehasher_oper_password_file.close()
+        if rehasher_oper_password_file is not None:
+            rehasher_oper_password_file.write(rehasher_oper_password)
+            rehasher_oper_password_file.flush()
+            rehasher_oper_password_file.close()
 
     rehasher_nick = "rehasher"
     rehasher_user = "rehasher"
