@@ -3,8 +3,8 @@ FROM archlinux/base
 RUN pacman -Sy --noconfirm unrealircd
 RUN groupadd -g 1000 unrealirc && \
     useradd -r -u 1000 -g unrealirc unrealirc && \
-    mkdir -p /run/unrealircd && \
-    chown unrealirc:unrealirc /run/unrealircd
+    mkdir -p /run/unrealircd /var/lib/unrealircd /var/cache/unrealircd /var/log/unrealircd && \
+    chown unrealirc:unrealirc /run/unrealircd /var/lib/unrealircd /var/cache/unrealircd /var/log/unrealircd
 USER unrealirc
 EXPOSE 6667 6697 6900
 
