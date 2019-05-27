@@ -62,7 +62,7 @@ def generate_main_config(
             "server_info": "Hashbang IRC Network",
         },
     )
-    with open(output_path, "w") as f:
+    with open(output_path, "w+") as f:
         f.write(contents)
 
 
@@ -128,7 +128,7 @@ async def generate_links_config(
 
         logger.info("Different link config, rerendering")
 
-        with open(output_path, "w") as f:
+        with open(output_path, "w+") as f:
             f.write(new_config)
 
         if irc_client:
