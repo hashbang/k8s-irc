@@ -13,18 +13,8 @@ operclass rehasher {
 };
 
 oper rehash {
-    mask "{{ config.rehasher_user }}@127.0.0.1";
+    mask "*@127.0.0.1";
     password "{{ config.oper_password }}";
     class "{{ config.oper_user_class }}";
     operclass rehasher;
 };
-
-ban nick {
-    mask "{{ config.rehasher_nick }}";
-    reason "Reserved for Internal Services";
-};
-
-except ban {
-    mask "{{ config.rehasher_user }}@127.0.0.1";
-};
-

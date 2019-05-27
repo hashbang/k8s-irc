@@ -46,9 +46,7 @@ main_template = template_environment.get_template("main.conf.j2")
 links_template = template_environment.get_template("links.conf.j2")
 
 
-def generate_main_config(
-    k8s_namespace, pod_name, oper_password, rehasher_nick, rehasher_user, output_path
-):
+def generate_main_config(k8s_namespace, pod_name, oper_password, output_path):
     current_server = k8s_namespace + "." + pod_name
 
     contents = main_template.render(
@@ -57,8 +55,6 @@ def generate_main_config(
         config={
             "oper_password": oper_password,
             "oper_user_class": "clients",
-            "rehasher_nick": rehasher_nick,
-            "rehasher_user": rehasher_user,
             "server_info": "Hashbang IRC Network",
         },
     )
@@ -252,9 +248,6 @@ def main(argv=None):
             rehasher_oper_password_file.flush()
             rehasher_oper_password_file.close()
 
-    rehasher_nick = "rehasher"
-    rehasher_user = "rehasher"
-
     output_path = args.output_path
     if args.subcommand == "main":
         if output_path is None:
@@ -265,8 +258,6 @@ def main(argv=None):
             pod_name=pod_name,
             output_path=output_path,
             oper_password=rehasher_oper_password,
-            rehasher_nick=rehasher_nick,
-            rehasher_user=rehasher_user,
         )
     else:
         if output_path is None:
@@ -294,8 +285,8 @@ def main(argv=None):
                 "tls": rehash_ssl_context,
                 "oper_user": "rehash",
                 "oper_credentials": rehasher_oper_password,
-                "nickname": rehasher_nick,
-                "username": rehasher_user,
+                "nickname": "rehasher",
+                "username": "rehasher",
             }
         else:
             rehash_args = None
