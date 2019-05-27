@@ -1,4 +1,5 @@
 import argparse
+import asyncio
 import hashlib
 import os
 import random
@@ -11,6 +12,7 @@ from kubernetes import client, config, watch
 from jinja2 import Environment, PackageLoader
 
 from . import __version__
+from . import rehasher_bot
 
 
 NS_FILENAME = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
@@ -62,12 +64,36 @@ def generate_main_config(
         f.write(contents)
 
 
-def generate_links_config(
+async def connect_to_ircd(
+    nickname,
+    username,
+    oper_user,
+    oper_credentials,
+    hostname="127.0.0.1",
+    port=6697,
+    tls=True,
+):
+    irc_client = rehasher_bot.RehasherBot(
+        nickname=nickname,
+        username=username,
+        oper_user=oper_user,
+        oper_credentials=oper_credentials,
+    )
+    await irc_client.connect(hostname=hostname, port=port, tls=tls)
+    return irc_client
+
+
+async def generate_links_config(
     k8s_namespace, label_selector, pod_name, link_password, rehash_args, output_path
 ):
     # Touch file so that it is created and irc server can start...
     with open(output_path, "w") as f:
         pass
+
+    if rehash_args:
+        irc_client = await connect_to_ircd(**rehash_args)
+    else:
+        irc_client = None
 
     v1 = client.CoreV1Api()
 
@@ -103,30 +129,10 @@ def generate_links_config(
         with open(output_path, "w") as f:
             f.write(new_config)
 
-        if rehash_args:
-            send_rehash(**rehash_args)
+        if irc_client:
+            await irc_client.rehash()
 
         old_config = new_config
-
-
-def send_rehash(
-    oper_credentials,
-    server_address=("127.0.0.1", 6697),
-    ssl_context=ssl.create_default_context(),
-    nick="rehasher",
-    user="rehasher",
-    sni=None,
-):
-    payload = f"""
-    NICK {nick}
-    USER {user} * * :Rehashes the IRCd!
-    OPER rehash {oper_credentials}
-    REHASH
-    """
-
-    with socket.create_connection(server_address) as conn:
-        with ssl_context.wrap_socket(conn, server_hostname=sni) as conn_tls:
-            conn_tls.send(payload.encode("ascii"))
 
 
 def main(argv=None):
@@ -273,20 +279,22 @@ def main(argv=None):
                 rehash_ssl_context.verify_mode = ssl.CERT_NONE
 
             rehash_args = {
-                "ssl_context": rehash_ssl_context,
+                "tls": rehash_ssl_context,
+                "oper_user": "rehash",
                 "oper_credentials": rehasher_oper_password,
-                "nick": rehasher_nick,
-                "user": rehasher_user,
-                "sni": None,
+                "nickname": rehasher_nick,
+                "username": rehasher_user,
             }
         else:
             rehash_args = None
 
-        generate_links_config(
-            k8s_namespace=k8s_namespace,
-            pod_name=pod_name,
-            output_path=output_path,
-            label_selector=label_selector,
-            link_password=link_password,
-            rehash_args=rehash_args,
+        asyncio.run(
+            generate_links_config(
+                k8s_namespace=k8s_namespace,
+                pod_name=pod_name,
+                output_path=output_path,
+                label_selector=label_selector,
+                link_password=link_password,
+                rehash_args=rehash_args,
+            )
         )

@@ -21,6 +21,11 @@ setup(
             "unrealircd-config-renderer = unrealircd_config_renderer.cli:main"
         ]
     },
-    install_requires=["kubernetes", "jinja2", "requests"],  # needed by kubernetes
+    install_requires=[
+        "kubernetes",
+        "jinja2",  # templating
+        "pydle",  # irc library
+        "requests",  # needed by kubernetes
+    ],
     zip_safe=True,
 )
