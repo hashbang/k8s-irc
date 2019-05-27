@@ -80,6 +80,7 @@ spec:
         - unrealircd-config-renderer
         - --rehasher-oper-password-file=/config-output/rehasher-oper-password
         - links
+        - --send-rehash
         env:
         - name: APP_NAME
           value: hashbang-ircd

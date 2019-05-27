@@ -102,7 +102,8 @@ def generate_links_config(
         with open(output_path, "w") as f:
             f.write(new_config)
 
-        send_rehash(**rehash_args)
+        if rehash_args:
+            send_rehash(**rehash_args)
 
         old_config = new_config
 
@@ -185,6 +186,11 @@ def main(argv=None):
         type=str,
         help="The password for linking servers (can also be specified using the LINK_PASSWORD environment variable)",
     )
+    links_conf.add_argument(
+        "--send-rehash",
+        action="store_true",
+        help="Should the tool connect to the IRC server and send REHASH?",
+    )
 
     args = parser.parse_args(argv)
 
@@ -254,15 +260,21 @@ def main(argv=None):
         if link_password is None:
             link_password = os.environ["LINK_PASSWORD"]
 
+        if args.send_rehash:
+            rehash_args = {
+                "oper_credentials": rehasher_oper_password,
+                "nick": rehasher_nick,
+                "user": rehasher_user,
+                "sni": None,
+            }
+        else:
+            rehash_args = None
+
         generate_links_config(
             k8s_namespace=k8s_namespace,
             pod_name=pod_name,
             output_path=output_path,
             label_selector=label_selector,
             link_password=link_password,
-            rehash_args={
-                "oper_credentials": rehasher_oper_password,
-                "nick": rehasher_nick,
-                "user": rehasher_user,
-            },
+            rehash_args=rehash_args,
         )
