@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import hashlib
+import logging
 import os
 import random
 import string
@@ -14,6 +15,7 @@ from jinja2 import Environment, PackageLoader
 from . import __version__
 from . import rehasher_bot
 
+logger = logging.getLogger(__name__)
 
 NS_FILENAME = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 
@@ -124,7 +126,7 @@ async def generate_links_config(
         if new_config == old_config:
             continue
 
-        print("Different links, rerendering")
+        logger.info("Different link config, rerendering")
 
         with open(output_path, "w") as f:
             f.write(new_config)
@@ -139,6 +141,9 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--version", action="version", version="%(prog)s " + __version__
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="count", default=0, help="verbosity (-v, -vv, etc)"
     )
     parser.add_argument(
         "--k8s-config", type=str, default="incluster", choices=["incluster", "remote"]
@@ -202,6 +207,15 @@ def main(argv=None):
     )
 
     args = parser.parse_args(argv)
+
+    if args.verbose == 0:
+        logging.basicConfig(level="ERROR")
+    elif args.verbose == 1:
+        logging.basicConfig(level="WARNING")
+    elif args.verbose == 2:
+        logging.basicConfig(level="INFO")
+    elif args.verbose >= 3:
+        logging.basicConfig(level="DEBUG")
 
     if args.k8s_config == "incluster":
         config.load_incluster_config()
@@ -298,3 +312,5 @@ def main(argv=None):
                 rehash_args=rehash_args,
             )
         )
+
+    logging.shutdown()
