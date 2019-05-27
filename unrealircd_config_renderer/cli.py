@@ -89,6 +89,7 @@ def generate_links_config(
                 "address": obj.status.pod_ip,
                 "port": 6900,
                 "password": link_password,
+                "verify_certificate": False,
             }
         elif obj.metadata.uid in server_links:
             del server_links[obj.metadata.uid]

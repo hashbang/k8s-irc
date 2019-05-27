@@ -6,7 +6,7 @@ link {{ server.name }} {
         options { ssl; autoconnect; };
     };
     password "{{ server.password }}";
-    verify-certificate yes;
+    verify-certificate {{ "yes" if server.verify_certificate else "no" }};
     hub *;
     class servers;
 };
