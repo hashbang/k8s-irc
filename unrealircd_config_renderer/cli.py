@@ -109,13 +109,10 @@ def generate_links_config(
         old_config = new_config
 
 
-ssl_context = ssl.create_default_context()
-ssl_context.check_hostname = False
-
-
 def send_rehash(
     oper_credentials,
     server_address=("127.0.0.1", 6697),
+    ssl_context=ssl.create_default_context(),
     nick="rehasher",
     user="rehasher",
     sni=None,
@@ -192,6 +189,11 @@ def main(argv=None):
         action="store_true",
         help="Should the tool connect to the IRC server and send REHASH?",
     )
+    links_conf.add_argument(
+        "--insecure",
+        action="store_true",
+        help="Ignore certificate validation errors when connecting to IRC server",
+    )
 
     args = parser.parse_args(argv)
 
@@ -262,7 +264,16 @@ def main(argv=None):
             link_password = os.environ["LINK_PASSWORD"]
 
         if args.send_rehash:
+            rehash_ssl_context = ssl.create_default_context()
+
+            # Turn off hostname checking until we set sni
+            rehash_ssl_context.check_hostname = False
+
+            if args.insecure:
+                rehash_ssl_context.verify_mode = ssl.CERT_NONE
+
             rehash_args = {
+                "ssl_context": rehash_ssl_context,
                 "oper_credentials": rehasher_oper_password,
                 "nick": rehasher_nick,
                 "user": rehasher_user,
