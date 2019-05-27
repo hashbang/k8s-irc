@@ -105,9 +105,11 @@ async def generate_links_config(
         # Don't want to include ourselves
         field_selector=f"metadata.name!={pod_name}",
     ):
-        # check event.status.phase
         obj = event["object"]
-        if obj.status.phase == "Running":
+        logger.info("Kubernetes event %s on %s phase=%s", event["type"], obj.metadata.uid, obj.status.phase)
+        if event["type"] == "DELETED":
+            del server_links[obj.metadata.uid]
+        elif obj.status.phase == "Running":
             server_links[obj.metadata.uid] = {
                 "name": obj.metadata.namespace + "." + obj.metadata.name,
                 "address": obj.status.pod_ip,
@@ -115,8 +117,6 @@ async def generate_links_config(
                 "password": link_password,
                 "verify_certificate": False,
             }
-        elif obj.metadata.uid in server_links:
-            del server_links[obj.metadata.uid]
 
         new_config = links_template.render(server_links=server_links)
         if new_config == old_config:
