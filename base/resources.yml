@@ -99,7 +99,7 @@ spec:
         - name: ircd-config-output
           mountPath: /config-output
       - name: ircd
-        image: hashbang/unrealircd:4.2.3-archlinux
+        image: hashbang/unrealircd:4.2.3-with-proxy
         imagePullPolicy: IfNotPresent
         volumeMounts:
         - name: ircd-config

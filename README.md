@@ -22,7 +22,7 @@ kubectl kustomize base | kubectl apply -f -
 ## Build and tag the unrealircd docker image:
 
 ```
-docker build -t hashbang/unrealircd:4.2.3-archlinux - < Dockerfile.unrealircd
+docker build -t hashbang/unrealircd:4.2.3-with-proxy - < Dockerfile.unrealircd
 ```
 
 
