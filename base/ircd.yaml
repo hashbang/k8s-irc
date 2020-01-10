@@ -455,13 +455,13 @@ opers:
         class: "server-admin"
 
         # custom whois line
-        whois-line: is a cool dude
+        whois-line: is an IRC operator
 
         # custom hostname
-        vhost: "n"
+        vhost: "hashbang.sh"
 
         # modes are the modes to auto-set upon opering-up
-        modes: +is acjknoqtux
+        modes: +i
 
         # operators can be authenticated either by password (with the /OPER command),
         # or by certificate fingerprint, or both. if a password hash is set, then a
@@ -476,6 +476,15 @@ opers:
         # if 'auto' is set (and no password hash is set), operator permissions will be
         # granted automatically as soon as you connect with the right fingerprint.
         #auto: true
+
+    slingamn:
+        # which capabilities this oper has access to
+        class: "server-admin"
+        whois-line: is an IRC operator
+        vhost: "hashbang.sh"
+        #modes: +i
+        password: "$2a$04$Ghggxzjaee6/t6JhYTUoN.Xbizw1g/3IZiqjjT0P6/vcgliysy.VG"
+
 
 # logging, takes inspiration from Insp
 logging:
