@@ -222,7 +222,11 @@ server:
         # you MUST generate a new one for your installation.
         # suggestion: use the output of `oragono mksecret`
         # note that rotating this key will invalidate all existing ban masks.
-        secret: "CLOAKSECRET_REPLACEME"
+        secret: ""
+
+        # name of an environment variable to pull the secret from, for use with
+        # k8s secret distribution:
+        secret-environment-variable: "ORAGONO_CLOAKING_SECRET"
 
         # the cloaked hostname is derived only from the CIDR (most significant bits
         # of the IP address), up to a configurable number of bits. this is the
