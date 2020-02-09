@@ -461,7 +461,7 @@ opers:
         whois-line: is an IRC operator
 
         # custom hostname
-        vhost: "hashbang.sh"
+        vhost: "staff.hashbang.sh"
 
         # modes are the modes to auto-set upon opering-up
         modes: +i
@@ -484,7 +484,7 @@ opers:
         # which capabilities this oper has access to
         class: "server-admin"
         whois-line: is an IRC operator
-        vhost: "hashbang.sh"
+        vhost: "staff.hashbang.sh"
         #modes: +i
         password: "$2a$04$Ghggxzjaee6/t6JhYTUoN.Xbizw1g/3IZiqjjT0P6/vcgliysy.VG"
 
