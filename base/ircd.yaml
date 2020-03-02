@@ -658,7 +658,7 @@ history:
     # are dynamically expanded up to the maximum length. if the buffer is full
     # and the oldest message is older than `autoresize-window`, then it will overwrite
     # the oldest message rather than resize; otherwise, it will expand if possible.
-    autoresize-window: 1h
+    autoresize-window: 2w
 
     # number of messages to automatically play back on channel join (0 to disable):
     autoreplay-on-join: 0
