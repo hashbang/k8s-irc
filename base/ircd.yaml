@@ -287,6 +287,10 @@ accounts:
     # PASS as well, so it can be configured to authenticate with SASL only.
     skip-server-password: false
 
+    # enable login to accounts via the PASS command, e.g., PASS account:password
+    # this is sometimes useful for compatibility with old clients that don't support SASL
+    login-via-pass-command: true
+
     # require-sasl controls whether clients are required to have accounts
     # (and sign into them using SASL) to connect to the server
     require-sasl:
@@ -320,13 +324,19 @@ accounts:
 
         # allow users to set their own nickname enforcement status, e.g.,
         # to opt in to strict enforcement
-        allow-custom-enforcement: true
+        allow-custom-enforcement: false
 
         # rename-timeout - this is how long users have 'til they're renamed
         rename-timeout: 30s
 
         # rename-prefix - this is the prefix to use when renaming clients (e.g. Guest-AB54U31)
         rename-prefix: Guest-
+
+        # when enabled, forces users logged into an account to use the
+        # account name as their nickname. when combined with strict nickname
+        # enforcement, this lets users treat nicknames and account names
+        # as equivalent for the purpose of ban/invite/exception lists.
+        force-nick-equals-account: true
 
     # bouncer controls whether oragono can act as a bouncer, i.e., allowing
     # multiple connections to attach to the same client/nickname identity
@@ -345,6 +355,9 @@ accounts:
         # when they have no active connections. The possible values are:
         # "disabled", "opt-in", "opt-out", or "mandatory".
         always-on: "opt-in"
+
+        # whether to mark always-on clients away when they have no active connections:
+        auto-away: "opt-in"
 
     # vhosts controls the assignment of vhosts (strings displayed in place of the user's
     # hostname/IP) by the HostServ service
@@ -513,7 +526,7 @@ logging:
         #   internal        unexpected runtime behavior, including potential bugs
         #   userinput       raw lines sent by users
         #   useroutput      raw lines sent to users
-        type: "server listeners localconnect localconnect-ip quit internal"
+        type: "server listeners connect connect-ip quit internal"
 
         # one of: debug info warn error
         level: debug
