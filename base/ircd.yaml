@@ -221,17 +221,6 @@ server:
         # fake TLD at the end of the hostname, e.g., pwbs2ui4377257x8.oragono
         netname: "hashbang.sh"
 
-        # secret key to prevent dictionary attacks against cloaked IPs
-        # any high-entropy secret is valid for this purpose:
-        # you MUST generate a new one for your installation.
-        # suggestion: use the output of `oragono mksecret`
-        # note that rotating this key will invalidate all existing ban masks.
-        secret: ""
-
-        # name of an environment variable to pull the secret from, for use with
-        # k8s secret distribution:
-        secret-environment-variable: "ORAGONO_CLOAKING_SECRET"
-
         # the cloaked hostname is derived only from the CIDR (most significant bits
         # of the IP address), up to a configurable number of bits. this is the
         # granularity at which bans will take effect for IPv4. Note that changing
@@ -245,7 +234,7 @@ server:
         # more bits means less likelihood of distinct IPs colliding,
         # at the cost of a longer cloaked hostname. if this value is set to 0,
         # all users will receive simply `netname` as their cloaked hostname.
-        num-bits: 80
+        num-bits: 64
 
 
 # account options
